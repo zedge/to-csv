@@ -13,17 +13,17 @@ CSV.DELIMITER = 0x2c;
 
 
 function head (a) {
-	return a[0];
+  return a[0];
 }
 
 function tail (a) {
-	return a[a.length -1];
+  return a[a.length -1];
 }
 
 function char (c) {
-	return 'number' === typeof c
-	         ? String.fromCharCode.apply(null, arguments)
-	         : c;
+  return 'number' === typeof c
+           ? String.fromCharCode.apply(null, arguments)
+           : c;
 }
 
 /**
@@ -32,36 +32,37 @@ function char (c) {
 
 module.exports = CSV;
 function CSV (objects, opts) {
-	if ('object' !== typeof objects) throw new TypeError("expecting an array");
+  if ('object' !== typeof objects) throw new TypeError("expecting an array");
 
-	opts = 'object' === typeof opts 
-	        ? opts
-	        : {};
-	
-	objects = isArray(objects)
-	           ? objects
-	           : [objects];
+  opts = 'object' === typeof opts
+          ? opts
+          : {};
 
-	if (!objects.length) throw new Error("expecting at least one object");
+  objects = isArray(objects)
+             ? objects
+             : [objects];
 
-	var headers = keys(head(objects))
-	  , buf = []
+  if (!objects.length) throw new Error("expecting at least one object");
 
-	while (objects.length) {
-		var lbuf = []
-		  , object = objects.shift()
+  var headers = keys(head(objects))
+    , buf = []
 
-		for (var i = 0 ;i < headers.length; ++i) {
-			var header = headers[i]
-			if (lbuf.length) lbuf.push(char(CSV.DELIMITER));
-			lbuf.push(object[header]);
-		}
+  while (objects.length) {
+    var lbuf = []
+      , object = objects.shift()
 
-		buf.push(lbuf.join(''));
-		buf.push(char(CSV.CHAR_RETURN, CSV.CHAR_NEWLINE));
-	}
+    for (var i = 0 ;i < headers.length; ++i) {
+      var header = headers[i]
+      if (lbuf.length) lbuf.push(char(CSV.DELIMITER));
+      lbuf.push('"'+object[header]+'"');
+    }
 
-	return false !== opts.headers
-	        ? [].concat(headers.join(','), char(CSV.CHAR_NEWLINE)).concat(buf).join('')
-	        : buf.join('');
+    buf.push(lbuf.join(''));
+    buf.push(char(CSV.CHAR_RETURN, CSV.CHAR_NEWLINE));
+  }
+
+  return false !== opts.headers
+          ? [].concat('"'+headers.join('","')+'"', char(CSV.CHAR_NEWLINE)).concat(buf).join('')
+          : buf.join('');
 }
+
